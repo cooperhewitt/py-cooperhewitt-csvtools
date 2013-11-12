@@ -57,7 +57,10 @@ class UnicodeWriter:
         enc = {}
 
         for k, v in row.items():
-            enc[ k.encode('utf-8') ] = v.encode('utf-8')
+            if v:
+                enc[ k.encode('utf-8') ] = v.encode('utf-8')
+            else:
+                enc[ k.encode('utf-8') ] = u''
 
         self.writer.writerow(enc)
 
