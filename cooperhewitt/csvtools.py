@@ -1,7 +1,10 @@
+#!/usr/bin/env python
+
 import csv
 import json
 import codecs
 import cStringIO
+import logging
 
 class UTF8Recoder:
     """
@@ -27,11 +30,26 @@ class UnicodeReader:
         self.reader = csv.DictReader(f, **kwds)
 
     def next(self):
+
         tmp = self.reader.next()
         row = {}
 
         for k, v in tmp.items():
-            row[ unicode(k, "utf-8") ] = unicode(v, "utf-8") 
+
+            try:
+
+                if k == None:
+                    logging.error("key is None value which is weird (%s)" % tmp)
+                    continue
+                if v == None:
+                    logging.debug("value is None value (%s)" % tmp)
+                    row[ unicode(k, "utf-8") ] = u''                
+                else:
+                    row[ unicode(k, "utf-8") ] = unicode(v, "utf-8") 
+                    
+            except Exception, e:
+
+                logging.error("failed to parse line, because %s (%s)" % (e, tmp))
 
         return row
 
@@ -78,3 +96,20 @@ class UnicodeWriter:
         for row in rows:
             self.writerow(row)
 
+
+if __name__ == '__main__':
+
+    import sys
+    import pprint
+
+    logging.basicConfig(level=logging.INFO)
+
+    path = sys.argv[1]
+    fh = open(path, 'rU')
+
+    reader = UnicodeReader(fh)
+
+    for row in reader:
+        print pprint.pformat(row)
+
+    sys.exit()
